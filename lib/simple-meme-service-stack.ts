@@ -23,6 +23,16 @@ export class SimpleMemeServiceStack extends cdk.Stack {
     });
 
     // creates a lambda function that will respond to mentions in Slack
+    const eventsLambda = new Function(this, 'simpleMemeServiceEventsLambda', {
+      code: Code.fromAssetImage(path.join(__dirname, '..', 'lambda', 'events')),
+      handler: Handler.FROM_IMAGE,
+      runtime: Runtime.FROM_IMAGE,
+      architecture: Architecture.ARM_64,
+      environment: {
+        BUCKET_NAME: bucket.bucketName,
+      },
+      logRetention: RetentionDays.ONE_DAY,
+    });
 
     // creates a lambda function that will respond to /upload and place images in S3
     const uploadImageLambda = new Function(this, 'simpleMemeServiceUploadImageLambda', {
@@ -77,6 +87,11 @@ export class SimpleMemeServiceStack extends cdk.Stack {
       }
     });
 
+    // declare a new proxy lambda integration for responding to Slack events
+    const eventsLambdaIntegration = new LambdaIntegration(eventsLambda, {
+      proxy: true,
+    });
+
     // declare a new proxy lambda integration for uploading images to the s3 bucket
     const uploadImageLambdaIntegration = new LambdaIntegration(uploadImageLambda, {
       proxy: true,
@@ -93,24 +108,31 @@ export class SimpleMemeServiceStack extends cdk.Stack {
     });
 
     // add /images to the api
-    const imagesApi = api.root.addResource('images');
+    const imagesResource = api.root.addResource('images');
 
-    // add /images/upload to the api
-    const uploadImageApi = imagesApi.addResource('upload')
-    // add /images/list to the api
-    const listImagesApi = imagesApi.addResource('list')
-    // add /images/delete to the api
-    const deleteImageApi = imagesApi.addResource('delete')
+    // add /events to the api
+    const eventsResource = api.root.addResource('events');
+
+    // add /images/upload to the images api
+    const uploadImageResource = imagesResource.addResource('upload')
+    // add /images/list to the images api
+    const listImagesResource = imagesResource.addResource('list')
+    // add /images/delete to the images api
+    const deleteImageResource = imagesResource.addResource('delete')
+
+    // declares post /events/ with the events lambda as the handler
+    eventsResource.addMethod('POST', eventsLambdaIntegration);
 
     // declare post /images/upload with the upload image lambda as the handler
-    uploadImageApi.addMethod('POST', uploadImageLambdaIntegration);
+    uploadImageResource.addMethod('POST', uploadImageLambdaIntegration);
 
     // delcares post /images/list with the get image lambda as the handler
-    listImagesApi.addMethod('POST', listImagesLambdaIntegration);
+    listImagesResource.addMethod('POST', listImagesLambdaIntegration);
 
     // declares post /images/delete with the delete image lambda as the handler
-    deleteImageApi.addMethod('POST', deleteImageLambdaIntegration);
+    deleteImageResource.addMethod('POST', deleteImageLambdaIntegration);
 
+    // output the url of the api to the console when deploying
     new CfnOutput(this, 'simpleMemeServiceApiUrl', {
       value: api.url,
     });
