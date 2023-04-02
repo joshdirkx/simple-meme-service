@@ -22,7 +22,7 @@ Simple Meme Service is Slack bot written using cloud native, serverless technolo
 #### Deploying the Infrastructure
 
 - Obtain credentials to your AWS account
-- Run `AWS_REGION=<desired_region> cdk deploy`, replacing `<desired_region>` with the AWS Region of your choice
+- Run `AWS_REGION=<desired_region> cdk deploy --parameters slackToken=<slack_token>`, replacing `<desired_region>` with the AWS Region of your choice and `<slack_token>` with your Slack application's Bot User OAuth Token
 
 #### Authorizing the Event Subscriptions Request URL
 
@@ -35,6 +35,9 @@ exports.handler = function (event, context, callback) {
 
   const body = {
     statusCode: 200,
+    headers: {
+      'Content-Type': 'application/json',
+    },
     body: JSON.stringify(
      challengeAnswer
     ),
@@ -43,3 +46,13 @@ exports.handler = function (event, context, callback) {
   return callback(null, body);
 };
 ```
+
+### Usage Instructions
+
+#### Uploading a Meme
+
+#### Deleting a Meme
+
+#### Listing all Memes
+
+#### Showing a Meme

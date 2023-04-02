@@ -1,5 +1,5 @@
 import * as cdk from 'aws-cdk-lib';
-import { CfnOutput } from 'aws-cdk-lib';
+import { CfnOutput, CfnParameter } from 'aws-cdk-lib';
 import { AccessLogFormat, LambdaIntegration, LogGroupLogDestination, RestApi } from 'aws-cdk-lib/aws-apigateway';
 import { Architecture, Code, Function, Handler, Runtime } from 'aws-cdk-lib/aws-lambda';
 import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
@@ -11,6 +11,11 @@ var path = require('path');
 export class SimpleMemeServiceStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
+
+    const slackToken = new CfnParameter(this, 'slackToken', {
+      type: 'String',
+      description: 'Token for your Slack application',
+    });
 
     // creates a log group for the api
     const apiLogGroup = new LogGroup(this, 'simpleMemeServiceApiLogGroup', {
@@ -31,6 +36,7 @@ export class SimpleMemeServiceStack extends cdk.Stack {
       architecture: Architecture.ARM_64,
       environment: {
         BUCKET_NAME: bucket.bucketName,
+        SLACK_TOKEN: slackToken.valueAsString,
       },
       logRetention: RetentionDays.ONE_DAY,
     });
@@ -71,8 +77,8 @@ export class SimpleMemeServiceStack extends cdk.Stack {
       logRetention: RetentionDays.ONE_DAY,
     });
 
-    // allow the post image lambda function to put images in the bucket
-    bucket.grantPut(uploadImageLambda);
+    // allow the events lambda to upload images to the bucket
+    bucket.grantPut(eventsLambda);
 
     // allow the get image lambda function to get images from the bucket
     bucket.grantRead(listImagesLambda);
