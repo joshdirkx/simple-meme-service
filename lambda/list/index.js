@@ -6,22 +6,20 @@ exports.handler = async (event) => {
   console.log(event);
 
   try {
-    const objectsList = s3.listObjectsV2({
+    const objects = await s3.listObjectsV2({
       Bucket: bucketName,
-    });
-    
-    const imageKeys = objectsList.Contents
-      .filter(object => /\.(jpg|jpeg|png|gif)$/i.test(object.Key))
-      .map(object => object.Key);
+    }).promise();
+
+    const imageUrls = objects.Contents.map(
+      (object) => `https://${bucketName}.s3.amazonaws.com/${object.Key}`
+    );
 
     return {
       statusCode: 200,
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        images: imageKeys
-      })
+      body: JSON.stringify(imageUrls)
     };
   } catch (error) {
     console.log(error);

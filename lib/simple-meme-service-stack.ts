@@ -48,7 +48,7 @@ export class SimpleMemeServiceStack extends cdk.Stack {
     });
 
     // creates a lambda function that will respond to /list and list all images in S3
-    const listImagesLambda = new Function(this, 'simpleMemeServiceGetImageLambda', {
+    const listImagesLambda = new Function(this, 'simpleMemeServiceListImagesLambda', {
       code: Code.fromAssetImage(path.join(__dirname, '..', 'lambda', 'list')),
       handler: Handler.FROM_IMAGE,
       runtime: Runtime.FROM_IMAGE,
