@@ -6,20 +6,22 @@ exports.handler = async (event) => {
   console.log(event);
 
   try {
-    const object = s3.getObject({
+    const objectsList = s3.listObjectsV2({
       Bucket: bucketName,
-      Key: event.pathParameters.imageKey
     });
     
-    const image = object.Body.toString('base64');
+    const imageKeys = objectsList.Contents
+      .filter(object => /\.(jpg|jpeg|png|gif)$/i.test(object.Key))
+      .map(object => object.Key);
 
     return {
       statusCode: 200,
       headers: {
-        'Content-Type': 'image/jpeg',
-        'Content-Encoding': 'base64',
+        'Content-Type': 'application/json',
       },
-      body: image,
+      body: JSON.stringify({
+        images: imageKeys
+      })
     };
   } catch (error) {
     console.log(error);
