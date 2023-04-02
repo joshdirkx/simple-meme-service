@@ -19,7 +19,8 @@ export class SimpleMemeServiceStack extends cdk.Stack {
 
     // creates an s3 bucket to store images in 
     const bucket = new Bucket(this, 'simpleMemeServiceBucket', {
-      versioned: false
+      versioned: false,
+      publicReadAccess: true,
     });
 
     // creates a lambda function that will respond to mentions in Slack
