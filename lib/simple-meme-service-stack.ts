@@ -22,9 +22,11 @@ export class SimpleMemeServiceStack extends cdk.Stack {
       versioned: false
     });
 
-    // creates a lambda function that will place images in the bucket
-    const postImageLambda = new Function(this, 'simpleMemeServicePostImageLambda', {
-      code: Code.fromAssetImage(path.join(__dirname, '..', 'lambda', 'post')),
+    // creates a lambda function that will respond to mentions in Slack
+
+    // creates a lambda function that will respond to /upload and place images in S3
+    const uploadImageLambda = new Function(this, 'simpleMemeServiceUploadImageLambda', {
+      code: Code.fromAssetImage(path.join(__dirname, '..', 'lambda', 'upload')),
       handler: Handler.FROM_IMAGE,
       runtime: Runtime.FROM_IMAGE,
       architecture: Architecture.ARM_64,
@@ -34,9 +36,9 @@ export class SimpleMemeServiceStack extends cdk.Stack {
       logRetention: RetentionDays.ONE_DAY,
     });
 
-    // creates a lambda function that will get images from the bucket
-    const getImageLambda = new Function(this, 'simpleMemeServiceGetImageLambda', {
-      code: Code.fromAssetImage(path.join(__dirname, '..', 'lambda', 'get')),
+    // creates a lambda function that will respond to /list and list all images in S3
+    const listImagesLambda = new Function(this, 'simpleMemeServiceGetImageLambda', {
+      code: Code.fromAssetImage(path.join(__dirname, '..', 'lambda', 'list')),
       handler: Handler.FROM_IMAGE,
       runtime: Runtime.FROM_IMAGE,
       architecture: Architecture.ARM_64,
@@ -46,7 +48,7 @@ export class SimpleMemeServiceStack extends cdk.Stack {
       logRetention: RetentionDays.ONE_DAY,
     });
 
-    // creates a lambda function that will get images from the bucket
+    // creates a lambda function that will respond to /delete and remove an image from S3
     const deleteImageLambda = new Function(this, 'simpleMemeServiceDeleteImageLambda', {
       code: Code.fromAssetImage(path.join(__dirname, '..', 'lambda', 'delete')),
       handler: Handler.FROM_IMAGE,
@@ -59,10 +61,10 @@ export class SimpleMemeServiceStack extends cdk.Stack {
     });
 
     // allow the post image lambda function to put images in the bucket
-    bucket.grantPut(postImageLambda);
+    bucket.grantPut(uploadImageLambda);
 
     // allow the get image lambda function to get images from the bucket
-    bucket.grantRead(getImageLambda);
+    bucket.grantRead(listImagesLambda);
 
     // allow the delete image lambda function to delete images from the bucket
     bucket.grantDelete(deleteImageLambda);
@@ -75,16 +77,13 @@ export class SimpleMemeServiceStack extends cdk.Stack {
       }
     });
 
-    // add /images to the api
-    const imagesApi = api.root.addResource('images');
-
     // declare a new proxy lambda integration for uploading images to the s3 bucket
-    const postImageLambdaIntegration = new LambdaIntegration(postImageLambda, {
+    const uploadImageLambdaIntegration = new LambdaIntegration(uploadImageLambda, {
       proxy: true,
     });
     
     // declare a new proxy lambda integration for retrieving images from the s3 bucket
-    const getImageLambdaIntegration = new LambdaIntegration(getImageLambda, {
+    const listImagesLambdaIntegration = new LambdaIntegration(listImagesLambda, {
       proxy: true,
     });
 
@@ -93,14 +92,24 @@ export class SimpleMemeServiceStack extends cdk.Stack {
       proxy: true,
     });
 
-    // declare post /images with the upload image lambda as the handler
-    imagesApi.addMethod('POST', postImageLambdaIntegration);
+    // add /images to the api
+    const imagesApi = api.root.addResource('images');
 
-    // delcares get /images with the get image lambda as the handler
-    imagesApi.addMethod('GET', getImageLambdaIntegration);
+    // add /images/upload to the api
+    const uploadImageApi = imagesApi.addResource('upload')
+    // add /images/list to the api
+    const listImagesApi = imagesApi.addResource('list')
+    // add /images/delete to the api
+    const deleteImageApi = imagesApi.addResource('delete')
 
-    // declares delete /images with the delete image lambda as the handler
-    imagesApi.addMethod('DELETE', deleteImageLambdaIntegration);
+    // declare post /images/upload with the upload image lambda as the handler
+    uploadImageApi.addMethod('POST', uploadImageLambdaIntegration);
+
+    // delcares post /images/list with the get image lambda as the handler
+    listImagesApi.addMethod('POST', listImagesLambdaIntegration);
+
+    // declares post /images/delete with the delete image lambda as the handler
+    deleteImageApi.addMethod('POST', deleteImageLambdaIntegration);
 
     new CfnOutput(this, 'simpleMemeServiceApiUrl', {
       value: api.url,

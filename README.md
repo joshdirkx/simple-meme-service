@@ -12,4 +12,14 @@ Simple Meme Service is Slack bot written using cloud native, serverless technolo
 
 - AWS Cloud Development Kit (CDK) installed
 - Slack workspace
-- AWS Account
+- AWS account
+
+#### Creating the Slack app
+
+- Update the values in slack/app-manifest.json as appropriate
+- Create a new Slack app from the contents of slack/app-manifest.json
+
+#### Deploying the Infrastructure
+
+- Obtain credentials to your AWS account
+- Run `AWS_REGION=<desired_region> cdk deploy`, replacing `<desired_region>` with the AWS Region of your choice
