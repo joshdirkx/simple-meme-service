@@ -1,4 +1,6 @@
-# Welcome to your CDK TypeScript project
+# Simple Meme Service
+
+![](assets/image.gif)
 
 This is a blank project for CDK development with TypeScript.
 

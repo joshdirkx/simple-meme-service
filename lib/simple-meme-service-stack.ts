@@ -1,7 +1,8 @@
 import * as cdk from 'aws-cdk-lib';
 import { CfnOutput } from 'aws-cdk-lib';
-import { LambdaIntegration, RestApi } from 'aws-cdk-lib/aws-apigateway';
+import { AccessLogFormat, LambdaIntegration, LogGroupLogDestination, RestApi } from 'aws-cdk-lib/aws-apigateway';
 import { Architecture, Code, Function, Handler, Runtime } from 'aws-cdk-lib/aws-lambda';
+import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
 import { Construct } from 'constructs';
 
@@ -10,6 +11,11 @@ var path = require('path');
 export class SimpleMemeServiceStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
+
+    // creates a log group for the api
+    const apiLogGroup = new LogGroup(this, 'simpleMemeServiceApiLogGroup', {
+      retention: RetentionDays.ONE_DAY,
+    });
 
     // creates an s3 bucket to store images in 
     const bucket = new Bucket(this, 'simpleMemeServiceBucket', {
@@ -24,7 +30,8 @@ export class SimpleMemeServiceStack extends cdk.Stack {
       architecture: Architecture.ARM_64,
       environment: {
         BUCKET_NAME: bucket.bucketName,
-      }
+      },
+      logRetention: RetentionDays.ONE_DAY,
     });
 
     // creates a lambda function that will get images from the bucket
@@ -35,7 +42,8 @@ export class SimpleMemeServiceStack extends cdk.Stack {
       architecture: Architecture.ARM_64,
       environment: {
         BUCKET_NAME: bucket.bucketName,
-      }
+      },
+      logRetention: RetentionDays.ONE_DAY,
     });
 
     // creates a lambda function that will get images from the bucket
@@ -46,7 +54,8 @@ export class SimpleMemeServiceStack extends cdk.Stack {
       architecture: Architecture.ARM_64,
       environment: {
         BUCKET_NAME: bucket.bucketName,
-      }
+      },
+      logRetention: RetentionDays.ONE_DAY,
     });
 
     // allow the post image lambda function to put images in the bucket
@@ -59,7 +68,12 @@ export class SimpleMemeServiceStack extends cdk.Stack {
     bucket.grantDelete(deleteImageLambda);
 
     // create a new api to handle image creation, retrieval, and deletion
-    const api = new RestApi(this, 'simpleMemeServiceApi');
+    const api = new RestApi(this, 'simpleMemeServiceApi', {
+      deployOptions: {
+        accessLogDestination: new LogGroupLogDestination(apiLogGroup),
+        accessLogFormat: AccessLogFormat.jsonWithStandardFields(),
+      }
+    });
 
     // add /images to the api
     const imagesApi = api.root.addResource('images');
