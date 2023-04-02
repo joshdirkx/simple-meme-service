@@ -1,0 +1,46 @@
+{
+    "display_information": {
+        "name": "simple-meme-service"
+    },
+    "features": {
+        "bot_user": {
+            "display_name": "simple-meme-service",
+            "always_online": true
+        },
+        "slash_commands": [
+            {
+                "command": "/upload",
+                "url": "https://gcw1rj7cz4.execute-api.us-west-2.amazonaws.com/prod/images/upload",
+                "description": "Uploads a new meme",
+                "should_escape": false
+            },
+            {
+                "command": "/delete",
+                "url": "https://gcw1rj7cz4.execute-api.us-west-2.amazonaws.com/prod/images/delete",
+                "description": "Deletes an existing meme",
+                "should_escape": false
+            },
+            {
+                "command": "/list",
+                "url": "https://gcw1rj7cz4.execute-api.us-west-2.amazonaws.com/prod/images/list",
+                "description": "List all memes",
+                "should_escape": false
+            }
+        ]
+    },
+    "oauth_config": {
+        "scopes": {
+            "bot": [
+                "commands",
+                "app_mentions:read",
+                "chat:write.customize",
+                "chat:write"
+            ]
+        }
+    },
+    "settings": {
+        "org_deploy_enabled": false,
+        "socket_mode_enabled": false,
+        "token_rotation_enabled": false
+    }
+}

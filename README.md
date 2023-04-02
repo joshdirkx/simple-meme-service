@@ -8,4 +8,8 @@ Simple Meme Service is Slack bot written using cloud native, serverless technolo
 
 ### Getting Started
 
+#### Requirements
 
+- AWS Cloud Development Kit (CDK) installed
+- Slack workspace
+- AWS Account
