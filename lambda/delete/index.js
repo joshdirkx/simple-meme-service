@@ -3,6 +3,8 @@ const s3 = new aws.S3();
 const bucketName = process.env.BUCKET_NAME;
 
 exports.handler = async (event) => {
+  console.log(event);
+
   try {
     s3.deleteObject({
       Bucket: bucketName,
@@ -19,6 +21,8 @@ exports.handler = async (event) => {
       }),
     };
   } catch (error) {
+    console.log(error);
+
     return {
       statusCode: 500,
       headers: {

@@ -3,6 +3,8 @@ const s3 = new aws.S3();
 const bucketName = process.env.BUCKET_NAME;
 
 exports.handler = async (event) => {
+  console.log(event);
+
   try {
     const object = s3.getObject({
       Bucket: bucketName,
@@ -20,6 +22,8 @@ exports.handler = async (event) => {
       body: image,
     };
   } catch (error) {
+    console.log(error);
+
     return {
       statusCode: 500,
       headers: {
