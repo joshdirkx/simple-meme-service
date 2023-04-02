@@ -1,16 +1,11 @@
 # Simple Meme Service
 
-![](assets/image.gif)
+## Supplying the funny, on demand
 
-This is a blank project for CDK development with TypeScript.
+![She's an icon, she's a legend and she IS the moment](assets/image.gif)
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+Simple Meme Service is Slack bot written using cloud native, serverless technologies. It is capable of uploading, retrieving, and deleting images on command from within your Slack workspace.
 
-## Useful commands
+### Getting Started
 
-* `npm run build`   compile typescript to js
-* `npm run watch`   watch for changes and compile
-* `npm run test`    perform the jest unit tests
-* `cdk deploy`      deploy this stack to your default AWS account/region
-* `cdk diff`        compare deployed stack with current state
-* `cdk synth`       emits the synthesized CloudFormation template
+
