@@ -1,5 +1,5 @@
-import { CfnOutput, CfnParameter, Stack, StackProps } from 'aws-cdk-lib';
-import { AccessLogFormat, LambdaIntegration, LogGroupLogDestination, RestApi } from 'aws-cdk-lib/aws-apigateway';
+import { CfnOutput, CfnParameter, Duration, Stack, StackProps } from 'aws-cdk-lib';
+import { AccessLogFormat, CfnGatewayResponse, LambdaIntegration, LogGroupLogDestination, RestApi } from 'aws-cdk-lib/aws-apigateway';
 import { Architecture, Code, Function, Handler, Runtime } from 'aws-cdk-lib/aws-lambda';
 import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
@@ -47,18 +47,23 @@ export class SimpleMemeServiceStack extends Stack {
 
     // create a new api to handle image creation, retrieval, and deletion
     const api = new RestApi(this, 'simpleMemeServiceApi', {
+      defaultIntegration: new LambdaIntegration(eventsLambda, {
+        proxy: true,
+        timeout: Duration.millis(50),
+      }),
       deployOptions: {
         accessLogDestination: new LogGroupLogDestination(apiLogGroup),
         accessLogFormat: AccessLogFormat.jsonWithStandardFields(),
       }
     });
 
-    // declare a new proxy lambda integration for responding to Slack events
-    const eventsLambdaIntegration = new LambdaIntegration(eventsLambda, {
-      proxy: true,
-      // makes the lambda invocation asynchronous
-      requestParameters: {
-        'integration.request.header.X-Amz-Invocation-Type': "'Event'",
+    // set a default response after timeout from api gateway
+    new CfnGatewayResponse(this, 'defaultResponse', {
+      restApiId: api.restApiId,
+      responseType: 'INTEGRATION_TIMEOUT',
+      statusCode: '200',
+      responseTemplates: {
+        'application/json': JSON.stringify({ message: 'message received' }),
       },
     });
 
@@ -66,7 +71,8 @@ export class SimpleMemeServiceStack extends Stack {
     const eventsResource = api.root.addResource('events');
 
     // declares post /events/ with the events lambda as the handler
-    eventsResource.addMethod('POST', eventsLambdaIntegration);
+    //eventsResource.addMethod('POST', eventsLambdaIntegration);
+    eventsResource.addMethod('POST');
 
     // output the url of the api to the console when deploying
     new CfnOutput(this, 'simpleMemeServiceApiUrl', {
