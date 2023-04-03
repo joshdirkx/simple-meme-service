@@ -14,9 +14,14 @@ exports.handler = async (event) => {
   const eventBody = JSON.parse(event.body);
   const channel = eventBody.event.channel;
   const isUpload = eventBody.event.text.includes('upload');
+  const isList = eventBody.event.text.includes('list');
+  const isDelete = eventBody.event.text.includes('delete');
+  const isPost = eventBody.event.text.includes('post');
 
   const imageUrl = eventBody.event.files[0].url_private_download;
   const fileName = eventBody.event.files[0].name;
+
+  var text = null;
 
   if (isUpload) {
     const imageResponse = await axios.get(imageUrl, {
@@ -34,12 +39,14 @@ exports.handler = async (event) => {
       ContentType: contentType,
       Body: imageData,
     }).promise();
-
-    slack.chat.postMessage({
-      text: `Uploaded ${fileName} to S3`,
-      channel: channel,
-    });
+    
+    text = `Uploaded ${fileName} to S3`;
   };
+
+  slack.chat.postMessage({
+    text: text,
+    channel: channel,
+  });
 
   return {
     statusCode: 200,
