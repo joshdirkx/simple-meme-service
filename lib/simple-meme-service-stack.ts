@@ -33,11 +33,11 @@ export class SimpleMemeServiceStack extends Stack {
       handler: Handler.FROM_IMAGE,
       runtime: Runtime.FROM_IMAGE,
       architecture: Architecture.ARM_64,
+      logRetention: RetentionDays.ONE_DAY,
       environment: {
         BUCKET_NAME: bucket.bucketName,
         SLACK_TOKEN: slackToken.valueAsString,
       },
-      logRetention: RetentionDays.ONE_DAY,
     });
 
     // allow the events lambda to upload, retrieve, and delete images
@@ -56,6 +56,10 @@ export class SimpleMemeServiceStack extends Stack {
     // declare a new proxy lambda integration for responding to Slack events
     const eventsLambdaIntegration = new LambdaIntegration(eventsLambda, {
       proxy: true,
+      // makes the lambda invocation asynchronous
+      requestParameters: {
+        'integration.request.header.X-Amz-Invocation-Type': "'Event'",
+      },
     });
 
     // add /events to the api

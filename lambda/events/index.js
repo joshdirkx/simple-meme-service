@@ -81,6 +81,7 @@ exports.handler = async (event) => {
     const imageUrl = `https://${bucketName}.s3.${awsRegion}.amazonaws.com/${fileName}`
 
     await slack.chat.postMessage({
+      text: '',
       channel: channel,
       blocks: [
         {
@@ -89,13 +90,18 @@ exports.handler = async (event) => {
           alt_text: 'meme',
         }
       ]
-    }).promise();
+    });
   };
 
   if (!isPost) {
     await slack.chat.postMessage({
       text: text,
       channel: channel,
-    }).promise();
+    });
+  };
+
+  return {
+    'statusCode': 200,
+    'body': JSON.stringify('success'),
   };
 };
