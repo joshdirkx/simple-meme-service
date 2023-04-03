@@ -1,5 +1,4 @@
-import * as cdk from 'aws-cdk-lib';
-import { CfnOutput, CfnParameter } from 'aws-cdk-lib';
+import { CfnOutput, CfnParameter, Stack, StackProps } from 'aws-cdk-lib';
 import { AccessLogFormat, LambdaIntegration, LogGroupLogDestination, RestApi } from 'aws-cdk-lib/aws-apigateway';
 import { Architecture, Code, Function, Handler, Runtime } from 'aws-cdk-lib/aws-lambda';
 import { LogGroup, RetentionDays } from 'aws-cdk-lib/aws-logs';
@@ -8,8 +7,8 @@ import { Construct } from 'constructs';
 
 var path = require('path');
 
-export class SimpleMemeServiceStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+export class SimpleMemeServiceStack extends Stack {
+  constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
     const slackToken = new CfnParameter(this, 'slackToken', {
