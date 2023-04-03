@@ -13,34 +13,33 @@ exports.handler = async (event) => {
 
   const eventBody = JSON.parse(event.body);
   const channel = eventBody.event.channel;
-  //const isUpload = eventBody.event.text.includes('upload');
+  const isUpload = eventBody.event.text.includes('upload');
 
   const imageUrl = eventBody.event.files[0].url_private_download;
   const fileName = eventBody.event.files[0].name;
-  //const mimeType = eventBody.event.files[0].mime_type;
 
-  //if (isUpload) {
-  const imageResponse = await axios.get(imageUrl, {
-    headers: {
-      Authorization: `Bearer ${slackToken}`,
-    },
-    responseType: 'arraybuffer',
-  });
-  const contentType = imageResponse.headers['content-type'];
-  const imageData = Buffer.from(imageResponse.data, 'binary');
+  if (isUpload) {
+    const imageResponse = await axios.get(imageUrl, {
+      headers: {
+        Authorization: `Bearer ${slackToken}`,
+      },
+      responseType: 'arraybuffer',
+    });
+    const contentType = imageResponse.headers['content-type'];
+    const imageData = Buffer.from(imageResponse.data, 'binary');
 
-  const object = await s3.putObject({
-    Bucket: bucketName,
-    Key: fileName,
-    ContentType: contentType,
-    Body: imageData,
-  }).promise();
+    await s3.putObject({
+      Bucket: bucketName,
+      Key: fileName,
+      ContentType: contentType,
+      Body: imageData,
+    }).promise();
 
-  slack.chat.postMessage({
-    text: `Image uploaded: ${object.Location}`,
-    channel: channel,
-  });
-  //};
+    slack.chat.postMessage({
+      text: `Uploaded ${fileName} to S3`,
+      channel: channel,
+    });
+  };
 
   return {
     statusCode: 200,
