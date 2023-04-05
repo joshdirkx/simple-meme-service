@@ -51,8 +51,14 @@ exports.handler = function (event, context, callback) {
 
 #### Uploading a Meme
 
+![](assets/upload.png)
+
 #### Deleting a Meme
 
 #### Listing all Memes
 
-#### Showing a Meme
+![](assets/list.png)
+
+#### Posting a Meme
+
+![](assets/post.png)
