@@ -55,9 +55,21 @@ exports.handler = async (event) => {
 
     console.log(objects);
 
-    const availableImages = objects.Contents.map((object) => object.Key).join('\n');
+    const availableImages = objects.Contents.map((object) => object.Key);
 
-    text = `${availableImages}`
+    var attachments = [];
+
+    availableImages.forEach((image) => attachments.push({
+      text: `${image}`,
+      fallback: `${image}`,
+      image_url: `https://${bucketName}.s3.${awsRegion}.amazonaws.com/${image}`
+    }))
+
+    await slack.chat.postMessage({
+      text: 'List of available images',
+      channel: channel,
+      attachments: attachments,
+    })
   };
 
   if (isDelete) {
